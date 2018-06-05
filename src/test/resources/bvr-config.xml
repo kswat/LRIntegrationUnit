@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:ws="http://www.springframework.org/schema/integration/ws"
+	xmlns:int-http="http://www.springframework.org/schema/integration/http"
+	xmlns:stream="http://www.springframework.org/schema/integration/stream"
+	xmlns:int-xml="http://www.springframework.org/schema/integration/xml"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:int-jms="http://www.springframework.org/schema/integration/jms"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/integration/http http://www.springframework.org/schema/integration/http/spring-integration-http.xsd
+		http://www.springframework.org/schema/integration/ws http://www.springframework.org/schema/integration/ws/spring-integration-ws.xsd
+		http://www.springframework.org/schema/integration/stream http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.1.xsd		
+		http://www.springframework.org/schema/integration/jms http://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/integration/xml http://www.springframework.org/schema/integration/xml/spring-integration-xml.xsd">
+    
+	<!-- 
+    <jee:jndi-lookup id="inconnectionFactory" jndi-name="LWBNAARQCF" resource-ref="false"/>    
+    <jee:jndi-lookup id="outconnectionFactory" jndi-name="LWBVANQCF" resource-ref="false"/>
+     -->
+     
+    <util:constant id="inconnectionFactory" static-field="com.db.EAITest.inconnectionFactory"/>
+    <util:constant id="outconnectionFactory" static-field="com.db.EAITest.outconnectionFactory"/>
+    <!--  
+    <jee:jndi-lookup id="inQ" jndi-name="LWBNAAR" resource-ref="false"/>
+    <jee:jndi-lookup id="outQ" jndi-name="LWBVAN" resource-ref="false"/>
+     -->
+    <bean id="inQ" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg value="queue.demo"/>
+	</bean>
+
+	<bean id="outQ" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg value="queue.reply"/>
+	</bean>        
+    
+    <int-jms:inbound-channel-adapter id="startJms" channel="ichannel" connection-factory="inconnectionFactory" destination="inQ">
+        <int:poller fixed-delay="500" />
+    </int-jms:inbound-channel-adapter>
+	
+	<int:bridge input-channel="ichannel" output-channel="ochannel"/>
+	 
+    <int-jms:outbound-channel-adapter id="finish" connection-factory="outconnectionFactory" destination="outQ"     	
+    	channel="ochannel"/>
+
+    <int:channel id="ichannel" />
+    <int:channel id="ochannel" />    
+</beans>
